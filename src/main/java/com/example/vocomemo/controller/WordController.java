@@ -43,7 +43,7 @@ public class WordController {
     }
 
     // 取得所有單字
-    @GetMapping("/")
+    @GetMapping("/allwords")
     public List<Word> getAllWords() {
         return wordService.getAllWords();
     }

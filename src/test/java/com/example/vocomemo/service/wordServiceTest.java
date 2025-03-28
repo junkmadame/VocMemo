@@ -7,12 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.example.vocomemo.VocMemoApplication;
 import com.example.vocomemo.dao.wordRepository;
 import com.example.vocomemo.entity.Word;
-import com.example.vocomemo.service.WordService;
 
 @SpringBootTest(classes = VocMemoApplication.class)
 public class wordServiceTest {
