@@ -1,5 +1,0 @@
-com\example\vocomemo\entity\Word.class
-com\example\vocomemo\controller\WordController.class
-com\example\vocomemo\dao\wordRepository.class
-com\example\vocomemo\service\WordService.class
-com\example\vocomemo\VocMemoApplication.class

@@ -86,11 +86,6 @@
 </dependency>
 <dependency>
     <groupId>org.hibernate.search</groupId>
-    <artifactId>hibernate-search-mapper-orm-orm6</artifactId>
-    <version>6.2.1.Final</version>
-</dependency>
-<dependency>
-    <groupId>org.hibernate.search</groupId>
     <artifactId>hibernate-search-backend-lucene</artifactId>
     <version>6.2.1.Final</version>
 </dependency>
@@ -104,6 +99,18 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.4.4</version>
+                <configuration>
+         		<mainClass>com.example.vocomemo.VocMemoApplication</mainClass>
+         		<finalName>VocMemo</finalName>
+                </configuration>
+                <executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+                </executions>
             </plugin>
             <!-- Maven Compiler Plugin，啟用 -parameters 編譯選項 -->
        <plugin>
@@ -114,7 +121,6 @@
 				<release>8</release>
          		<source>8</source>
          		<target>8</target>
-         		
          		<compilerArgs>
             <arg>-parameters</arg>
         </compilerArgs>
