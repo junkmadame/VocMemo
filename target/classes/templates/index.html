@@ -1,147 +1,134 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VocMemo</title>
-    <!-- import bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container mt-5"> <!-- Bootstrap container 居中對齊好幫手 -->
+<div class="container mt-5">
     <h1>VocMemo</h1>
-    
-    <h2>Add a new word</h2>
+    <h2>Add a new word
+    <!-- 開始測驗按鈕 -->
+        <button class="btn btn-success" onclick="startQuiz()">Start Quiz</button>
+        </h2>
     <form id="wordForm">
-        <label for="wordContent">Please Word:</label>
-        <input type="text" id="wordContent" name="wordContent" required><br><br>
-        
-        <label for="wordDefinition">Please enter Definition:</label>
-        <input type="text" id="wordDefinition" name="wordDefinition" required><br><br>
-        
-        <button type="submit">Add New Word</button>
+        <input type="text" id="wordContent" name="wordContent" placeholder="Enter Word" required>
+        <input type="text" id="wordDefinition" name="wordDefinition" placeholder="Enter Definition" required>
+        <button type="submit" class="btn btn-primary">Add</button>
     </form>
-
     <h2>Words List</h2>
     <table class="table table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Word</th>
-            <th>Definition</th>
-            <th>Update</th>
-            <th>Delete</th>
-        </tr>
-     </thead>
-     <tbody id="wordTableBody">
-      </tbody>
+        <thead class="table-dark">
+            <tr>
+                <th>Word</th>
+                <th>Definition</th>
+                <th>Update</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody id="wordTableBody"></tbody>
     </table>
-   </div>
-   <script>
+</div>
+
+<script>
     document.getElementById("wordForm").addEventListener("submit", function(event) {
-        event.preventDefault(); // **阻止 form action 提交，改用 fetch**
-        
-        let formData = new FormData(event.target);
-        let jsonData = {};
-        formData.forEach((value, key) => { jsonData[key] = value });
+        event.preventDefault();
+        let wordContent = document.getElementById("wordContent").value;
+        let wordDefinition = document.getElementById("wordDefinition").value;
 
         fetch("/word/createWord", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(jsonData)
+            body: JSON.stringify({ wordContent, wordDefinition })
         })
         .then(response => response.json())
         .then(data => {
-            console.log("Word added:", data);
-            loadWords(); // 重新加載單字列表
+            addWordToTable(data);
+            event.target.reset();
         })
         .catch(error => console.error("Error:", error));
     });
 
-    function loadWords() {
+    function fetchWords() {
         fetch("/word/allwords")
             .then(response => response.json())
-            .then(data => {
-                let tableBody = document.getElementById("wordTableBody");
-                tableBody.innerHTML = ""; // 清空現有表格內容
-                
-                data.forEach(word => {
-                    // 創建表格行
-                    let row = document.createElement("tr");
-
-                    // 創建 ID 欄位
-                    let idCell = document.createElement("td");
-                    idCell.textContent = word.id;
-                    row.appendChild(idCell);
-
-                    // 創建 Word 欄位
-                    let wordContentCell = document.createElement("td");
-                    wordContentCell.textContent = word.wordContent;
-                    row.appendChild(wordContentCell);
-
-                    // 創建 Definition 欄位
-                    let wordDefinitionCell = document.createElement("td");
-                    wordDefinitionCell.textContent = word.wordDefinition;
-                    row.appendChild(wordDefinitionCell);
-
-                    // 創建 updateCell 欄位，包含 Update 按鈕
-                    let updateCell = document.createElement("td");
-
-                    // Create Update Button
-                    let updateButton = document.createElement("button");
-                    updateButton.className = "btn btn-warning";
-                    updateButton.textContent = "Update";
-                    updateButton.onclick = function() {
-                        // 處理更新邏輯，這裡可以打開一個更新表單，或者其他更新邏輯
-                        alert("Update word: " + word.wordContent);
-                        // 可以根據需要調用一個更新的函數來處理
-                    };
-                    updateCell.appendChild(updateButton);
-
-                 	// 創建 deleteCell 欄位，包含 delete 按鈕
-                 	let deleteCell = document.createElement("td");
-                 	
-                    // Create Delete Button
-                    let deleteButton = document.createElement("button");
-                    deleteButton.className = "btn btn-danger";
-                    deleteButton.textContent = "Delete";
-                    deleteButton.onclick = function() {
-                        // 呼叫刪除接口，這裡可以發送刪除請求
-                        fetch(`/word/deleteWord/${word.id}`, {
-                            method: "DELETE"
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log("Word deleted:", data);
-                            loadWords(); // 重新加載單字列表
-                        })
-                        .catch(error => console.error("Error:", error));
-                    };
-                    deleteCell.appendChild(deleteButton);
-
-                    // 將 updateCell, deleteCell 添加到行中
-                    row.appendChild(updateCell);
-                    row.appendChild(deleteCell);
-
-                    // 最後將這行添加到表格中
-                    tableBody.appendChild(row);
-                });
-            });
+            .then(words => renderWords(words))
+            .catch(error => console.error("Error fetching words:", error));
     }
 
+    function renderWords(words) {
+        let tableBody = document.getElementById("wordTableBody");
+        tableBody.innerHTML = "";
+        words.forEach(word => addWordToTable(word));
+    }
 
-    
- 	// 初次加載單字列表
-    loadWords();
+    function addWordToTable(word) {
+        let tableBody = document.getElementById("wordTableBody");
+        let row = document.createElement("tr");
 
-    // Timer update word list every 3 seconds
-    //setInterval(loadWords, 3000);
+        row.innerHTML = `
+            <td contenteditable="true">${word.wordContent}</td>
+            <td contenteditable="true">${word.wordDefinition}</td>
+            <td>
+                <button class="btn btn-success" onclick="updateWord(${word.id}, this)">Update</button>
+            </td>
+            <td>
+                <button class="btn btn-danger" onclick="deleteWord(${word.id}, this)">Delete</button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    }
+
+    function updateWord(id, button) {
+        let row = button.parentElement.parentElement;
+        let wordContent = row.cells[0].textContent;
+        let wordDefinition = row.cells[1].textContent;
+
+        let updatedWord = {
+            id: id,
+            wordContent: wordContent,
+            wordDefinition: wordDefinition
+        };
+
+        fetch(`/word/updateWord/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedWord)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Word updated:", data);
+            fetchWords();
+        })
+        .catch(error => console.error("Error:", error));
+    }
+
+    function deleteWord(id, button) {
+        fetch(`/word/deleteWord/${id}`, { method: "DELETE" })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json().catch(() => null); // Handle non-JSON responses
+            })
+            .then(() => {
+                button.parentElement.parentElement.remove();
+                fetchWords();
+            })
+            .catch(error => console.error("Error:", error));
+    }
+
+    // 當使用者按下開始測驗時，跳轉到測驗頁面
+    function startQuiz() {
+        window.location.href = "/quiz.html";
+    }
+
+    fetchWords();
 </script>
-    
-    <!-- import Bootstrap 5 JavaScript (include Popper.js) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

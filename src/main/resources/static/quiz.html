@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Quiz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Vocabulary Quiz <button class="btn btn-secondary" onclick="window.location.href='/'">Back to Home</button></h1>
+    <div id="quizContainer">
+        <p id="question" style="font-size: 1.5em; font-weight: bold;"></p>
+        <input type="text" id="answer" class="form-control" placeholder="Type your answer here">
+        <p id="feedback"></p>
+        <button id="submitButton" class="btn btn-primary mt-3" onclick="checkAnswer()">Submit Answer</button>
+        <button id="showAnswerButton" class="btn btn-secondary mt-3" onclick="showAnswer()" style="display: none;">Show Answer</button>
+        <button id="nextButton" class="btn btn-primary mt-3" onclick="nextQuestion()" style="display: none;">Next Question</button>
+        <button id="endButton" class="btn btn-danger mt-3 ml-auto" onclick="showResult()" style="display: none;">End Test and Show Result</button>
+    </div>
+    
+    <!-- 結束後顯示結果 -->
+    <div id="result" style="display: none;">
+        <h3>Your Score: <span id="score"></span></h3>
+        <button class="btn btn-secondary mt-3" onclick="window.location.href='/'">Back to Home</button>
+        <button class="btn btn-primary mt-3" onclick="restartQuiz()">Restart Test</button>
+    </div>
+</div>
+
+<script>
+    let words = []; // 假設你從後端取得所有單字
+    let currentWordIndex = 0;
+    let score = 0;
+
+    // 模擬從後端獲得單字列表
+    fetch("/word/allwords")
+        .then(response => response.json())
+        .then(data => {
+            words = data;
+            displayQuestion();
+        });
+
+    function displayQuestion() {
+        if (currentWordIndex < words.length) {
+            const word = words[currentWordIndex];
+            document.getElementById("question").textContent = word.wordDefinition;
+            document.getElementById("answer").value = "";
+            document.getElementById("feedback").textContent = "";
+            document.getElementById("submitButton").style.display = "inline-block"; // 顯示 Submit 按鈕
+            document.getElementById("nextButton").style.display = "none"; // 隱藏 Next 按鈕
+            document.getElementById("endButton").style.display = "none"; // 隱藏 End 按鈕
+            document.getElementById("showAnswerButton").style.display = "none"; // 隱藏 Show Answer 按鈕
+        } else {
+            showResult();
+        }
+    }
+
+    function checkAnswer() {
+        const userAnswer = document.getElementById("answer").value.trim().toLowerCase();
+        const correctAnswer = words[currentWordIndex].wordContent.toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+            score++;
+            document.getElementById("feedback").textContent = "Correct!";
+            // 只顯示 Next Question 和 End Test 按鈕
+            document.getElementById("submitButton").style.display = "none"; // 隱藏 Submit 按鈕
+            document.getElementById("showAnswerButton").style.display = "none"; // 隱藏 Show Answer 按鈕
+            document.getElementById("nextButton").style.display = "inline-block"; // 顯示 Next 按鈕
+            document.getElementById("endButton").style.display = "inline-block"; // 顯示 End 按鈕
+        } else {
+            document.getElementById("feedback").textContent = "Incorrect!"; // 顯示答錯的訊息
+            // 顯示 "Show Answer" 按鈕
+            document.getElementById("showAnswerButton").style.display = "inline-block";
+            document.getElementById("submitButton").style.display = "none"; // 隱藏 Submit 按鈕
+            document.getElementById("nextButton").style.display = "inline-block"; // 顯示 Next 按鈕
+            document.getElementById("endButton").style.display = "inline-block"; // 顯示 End 按鈕
+        }
+    }
+
+    function showAnswer() {
+        const correctAnswer = words[currentWordIndex].wordContent;
+        document.getElementById("feedback").textContent = "The correct answer is " + correctAnswer;
+        document.getElementById("showAnswerButton").style.display = "none"; // 隱藏 Show Answer 按鈕
+    }
+
+    function nextQuestion() {
+        currentWordIndex++;
+        displayQuestion();
+    }
+
+    function showResult() {
+        document.getElementById("quizContainer").style.display = "none";  // 隱藏問題頁面
+        document.getElementById("result").style.display = "block";  // 顯示結果頁面
+        document.getElementById("score").textContent = score + " / " + words.length;  // 顯示分數
+    }
+
+    function restartQuiz() {
+        currentWordIndex = 0;
+        score = 0;
+        document.getElementById("result").style.display = "none";  // 隱藏結果頁面
+        document.getElementById("quizContainer").style.display = "block";  // 顯示問題頁面
+        displayQuestion();  // 顯示第一題
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

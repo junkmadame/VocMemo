@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
@@ -29,11 +31,18 @@ public class WordService {
 	
 	//Update Word
 	public Word updateWord(Word word, Long id) {
-		Word existingWord = wordRepository.findById(id).orElseThrow(()->new RuntimeException("Word not found"));
-		existingWord.setWordContent(word.getWordContent());
-		existingWord.setWordDefinition(word.getWordDefinition());
-		return wordRepository.save(existingWord);
+	    // 查詢是否有該 id 的資料
+	    Word existingWord = wordRepository.findById(id).orElse(null);
+	    if (existingWord == null) {
+	        return null; // 找不到資料則返回 null
+	    }
+	    // 更新單字內容
+	    existingWord.setWordContent(word.getWordContent());
+	    existingWord.setWordDefinition(word.getWordDefinition());
+	    wordRepository.save(existingWord); // 保存更新後的單字
+	    return existingWord; // 返回更新後的單字
 	}
+
 	
 	//Delete Word
 	public void deleteWord(Long id) {
