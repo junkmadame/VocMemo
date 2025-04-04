@@ -13,17 +13,43 @@
     <!-- 開始測驗按鈕 -->
         <button class="btn btn-success" onclick="startQuiz()">Start Quiz</button>
         </h2>
+       <!-- 單字與類別新增 -->
     <form id="wordForm">
-        <input type="text" id="wordContent" name="wordContent" placeholder="Enter Word" required>
-        <input type="text" id="wordDefinition" name="wordDefinition" placeholder="Enter Definition" required>
-        <button type="submit" class="btn btn-primary">Add</button>
-    </form>
+    <div class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <input type="text" id="wordContent" class="form-control" placeholder="Enter Word" required>
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="wordDefinition" class="form-control" placeholder="Enter Definition" required>
+        </div>
+        <div class="col-md-4">
+            <select id="wordCategory" class="form-select" required>
+                <option value="">-- Select Category --</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Add Word</button>
+</form>
+
+	<h4 class="mt-4">Create New Category</h4>
+<div class="input-group mb-3">
+    <input type="text" id="newCategoryName" class="form-control" placeholder="Category Name">
+    <input type="text" id="newCategoryDescription" class="form-control" placeholder="Description">
+    <button class="btn btn-secondary" onclick="createCategory()">Add Category</button>
+</div>
+	
+	
+	<!-- 單字列表 -->
     <h2>Words List</h2>
+    <select id="currentCategorySelect" class="form-select form-select-lg mb-3">
+    	<option value="">-- Select Category to View/Quiz --</option>
+	</select>
     <table class="table table-striped">
         <thead class="table-dark">
             <tr>
                 <th>Word</th>
                 <th>Definition</th>
+                <th>Category</th>
                 <th>Update</th>
                 <th>Delete</th>
             </tr>
@@ -33,29 +59,39 @@
 </div>
 
 <script>
-    document.getElementById("wordForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-        let wordContent = document.getElementById("wordContent").value;
-        let wordDefinition = document.getElementById("wordDefinition").value;
+document.getElementById("wordForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    let wordContent = document.getElementById("wordContent").value;
+    let wordDefinition = document.getElementById("wordDefinition").value;
+    let categoryId = document.getElementById("wordCategory").value;
 
-        fetch("/word/createWord", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ wordContent, wordDefinition })
+    fetch("/word/createWord", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            wordContent,
+            wordDefinition,
+            wordCategory: { id: categoryId }
         })
-        .then(response => response.json())
-        .then(data => {
-            addWordToTable(data);
-            event.target.reset();
-        })
-        .catch(error => console.error("Error:", error));
-    });
+    })
+    .then(response => response.json())
+    .then(data => {
+        addWordToTable(data);
+        event.target.reset();
+    })
+    .catch(error => console.error("Error:", error));
+});
 
-    function fetchWords() {
-        fetch("/word/allwords")
-            .then(response => response.json())
-            .then(words => renderWords(words))
-            .catch(error => console.error("Error fetching words:", error));
+	function fetchWords(categoryId = null) {
+    	let url = "/word/allwords";
+    	if (categoryId) {
+        	url += `?categoryId=${categoryId}`;
+    }
+
+    	fetch(url)
+        	.then(response => response.json())
+        	.then(words => renderWords(words))
+        	.catch(error => console.error("Error fetching words:", error));
     }
 
     function renderWords(words) {
@@ -71,6 +107,7 @@
         row.innerHTML = `
             <td contenteditable="true">${word.wordContent}</td>
             <td contenteditable="true">${word.wordDefinition}</td>
+            <td>${word.wordCategory?.name || '-'}</td> <!-- 防止空值錯誤 -->
             <td>
                 <button class="btn btn-success" onclick="updateWord(${word.id}, this)">Update</button>
             </td>
@@ -125,8 +162,66 @@
     function startQuiz() {
         window.location.href = "/quiz.html";
     }
+    
+    // Fetch categories and populate the select element
+    function fetchCategories(selectId = null) {
+    fetch("/category")
+        .then(response => response.json())
+        .then(categories => {
+            const wordCategorySelect = document.getElementById("wordCategory");
+            const currentCategorySelect = document.getElementById("currentCategorySelect");
+            
+            wordCategorySelect.innerHTML = '<option value="">-- Select Category --</option>';
+            currentCategorySelect.innerHTML = '<option value="">-- Select Category to View/Quiz --</option>';
+            
+            categories.forEach(cat => {
+                const opt1 = new Option(cat.name, cat.id);
+                const opt2 = new Option(cat.name, cat.id);
+                if (selectId && cat.id == selectId) {
+                    opt1.selected = true;
+                }
+                wordCategorySelect.appendChild(opt1);
+                currentCategorySelect.appendChild(opt2);
+            });
+        })
+        .catch(error => console.error("Error loading categories:", error));
+    }
+    
+    function createCategory() {
+        let name = document.getElementById("newCategoryName").value;
+        let description = document.getElementById("newCategoryDescription").value;
 
+        if (!name) {
+            alert("Please enter a category name.");
+            return;
+        }
+
+        fetch("/category/createCategory", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, description })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert("Category added!");
+            document.getElementById("newCategoryName").value = "";
+            document.getElementById("newCategoryDescription").value = "";
+            fetchCategories(data.id); // 加載分類並選中剛剛新增的那筆
+        })
+        .catch(error => console.error("Error creating category:", error));
+    }
+    
+    // Fetch words based on selected category
+    document.getElementById("currentCategorySelect").addEventListener("change", function () {
+        const categoryId = this.value;
+        fetchWords(categoryId);
+    });
+
+
+    fetchCategories();
     fetchWords();
+    
+    
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

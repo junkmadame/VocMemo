@@ -1,5 +1,9 @@
+C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\controller\WordCategoryController.java
 C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\controller\WordController.java
+C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\dao\WordCategoryRepository.java
 C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\dao\wordRepository.java
 C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\entity\Word.java
+C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\entity\WordCategory.java
+C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\service\WordCategoryService.java
 C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\service\WordService.java
 C:\Users\user\Desktop\VocMemo\VocMemo\src\main\java\com\example\vocomemo\VocMemoApplication.java

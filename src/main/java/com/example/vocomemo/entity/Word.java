@@ -1,5 +1,7 @@
 package com.example.vocomemo.entity;
 
+import com.example.vocomemo.entity.WordCategory;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -7,6 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 
@@ -24,18 +28,23 @@ public class Word {
 	@Column(name = "word_definition")
 	private String wordDefinition;
 	
+	@ManyToOne
+	@JoinColumn(name = "category_id")
+	private WordCategory wordCategory;
+	
 	
 	//Spring JPA 需要一個無參數的建構子
 	public Word() {
 
 	}
 	
-	public Word(String wordContent, String wordDefinition ){
+	public Word(String wordContent, String wordDefinition, WordCategory wordCategory){
 		this.wordContent = wordContent;
 		this.wordDefinition = wordDefinition;
+		this.wordCategory = wordCategory;
 	}
 	
-	public void setID(Long id ) {
+	public void setId(Long id ) {
 		this.id= id;
 	}
 	
@@ -57,5 +66,13 @@ public class Word {
 	
 	public String getWordDefinition() {
 		return wordDefinition;
+	}
+	
+	public void setWordCategory(WordCategory wordCategory) {
+		this.wordCategory = wordCategory;
+	}
+	
+	public WordCategory getWordCategory() {
+		return wordCategory;
 	}
 }
